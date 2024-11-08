@@ -3,6 +3,7 @@ import numpy as np
 import streamlit as st
 from PIL import Image
 import io
+from time import sleep
 
 # Function to convert text to binary format
 def text_to_bin(text):
@@ -20,6 +21,7 @@ def encode_text_in_image(image, text):
         raise ValueError("Text is too long to encode in the image.")
     
     binary_text = text_to_bin(text) + '1111111111111110'  # Delimiter to indicate end
+
     data_index = 0
     binary_len = len(binary_text)
     
@@ -65,10 +67,10 @@ st.sidebar.title("🔐 Image Steganography & Morphological Operations App")
 st.sidebar.markdown("Hide and reveal secret messages in images or apply morphological operations.")
 selected_page = st.sidebar.selectbox("Choose a mode", ["Encode Message", "Decode Message", "Morphological Operations"])
 
-# Apply dark/light theme based on selection
 st.sidebar.markdown("### Appearance Settings")
 theme = st.sidebar.selectbox("Select Theme", ["Light", "Dark"])
 
+# Apply custom CSS styling based on the theme
 if theme == "Dark":
     st.markdown("""
         <style>
@@ -100,22 +102,22 @@ if selected_page == "Encode Message":
         image_np = np.array(image)
         
         if st.button("🔒 Encode Message"):
-            with st.spinner("Encoding message into image..."):
-                try:
-                    encoded_image = encode_text_in_image(image_np.copy(), message)
-                    st.success("Message encoded successfully!")
+            st.info("Encoding message into image...")
+            try:
+                encoded_image = encode_text_in_image(image_np.copy(), message)
+                sleep(1)
+                st.success("Message encoded successfully!")
 
-                    st.image(encoded_image, caption="Image with Hidden Message")
-                    
-                    # Provide download link for the encoded image
-                    encoded_image_pil = Image.fromarray(encoded_image)
-                    buf = io.BytesIO()
-                    encoded_image_pil.save(buf, format="PNG")
-                    byte_im = buf.getvalue()
-                    st.download_button("💾 Download Encoded Image", byte_im, "encoded_image.png", "image/png")
-                    
-                except ValueError as e:
-                    st.error(f"Error: {e}")
+                st.image(encoded_image, caption="Image with Hidden Message")
+                
+                encoded_image_pil = Image.fromarray(encoded_image)
+                buf = io.BytesIO()
+                encoded_image_pil.save(buf, format="PNG")
+                byte_im = buf.getvalue()
+                st.download_button("💾 Download Encoded Image", byte_im, "encoded_image.png", "image/png")
+                
+            except ValueError as e:
+                st.error(f"Error: {e}")
 
 elif selected_page == "Decode Message":
     st.subheader("Decode a Secret Message from an Image")
@@ -127,13 +129,14 @@ elif selected_page == "Decode Message":
         image_np = np.array(image)
         
         if st.button("🔍 Decode Message"):
-            with st.spinner("Decoding message from image..."):
-                try:
-                    hidden_message = decode_text_from_image(image_np)
-                    st.success("Message decoded successfully!")
-                    st.write("🔓 Hidden Message:", hidden_message)
-                except Exception as e:
-                    st.error(f"Error decoding message: {e}")
+            st.info("Decoding message from image...")
+            try:
+                hidden_message = decode_text_from_image(image_np)
+                sleep(1)
+                st.success("Message decoded successfully!")
+                st.write("🔓 Hidden Message:", hidden_message)
+            except Exception as e:
+                st.error(f"Error decoding message: {e}")
 
 elif selected_page == "Morphological Operations":
     st.subheader("Apply Morphological Operations to an Image")
@@ -146,18 +149,18 @@ elif selected_page == "Morphological Operations":
         image_np = np.array(image)
         
         if st.button("Apply Operation"):
-            with st.spinner(f"Applying {operation} to image..."):
-                processed_image = apply_morphological_operation(image_np, operation)
-                st.success(f"{operation} applied successfully!")
+            st.info(f"Applying {operation} to image...")
+            processed_image = apply_morphological_operation(image_np, operation)
+            sleep(1)
+            st.success(f"{operation} applied successfully!")
 
-                st.image(processed_image, caption=f"Image after {operation}")
-                
-                # Provide download link for the processed image
-                processed_image_pil = Image.fromarray(processed_image)
-                buf = io.BytesIO()
-                processed_image_pil.save(buf, format="PNG")
-                byte_im = buf.getvalue()
-                st.download_button(f"💾 Download {operation} Image", byte_im, f"{operation.lower()}_image.png", "image/png")
+            st.image(processed_image, caption=f"Image after {operation}")
+            
+            processed_image_pil = Image.fromarray(processed_image)
+            buf = io.BytesIO()
+            processed_image_pil.save(buf, format="PNG")
+            byte_im = buf.getvalue()
+            st.download_button(f"💾 Download {operation} Image", byte_im, f"{operation.lower()}_image.png", "image/png")
 
 # Footer
 st.markdown("<hr>", unsafe_allow_html=True)
